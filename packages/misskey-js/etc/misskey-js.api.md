@@ -2230,6 +2230,10 @@ export type Endpoints = {
             };
         };
     };
+    'users/stats': {
+        req: TODO;
+        res: TODO;
+    };
 };
 
 declare namespace entities {
