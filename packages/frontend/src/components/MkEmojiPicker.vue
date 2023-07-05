@@ -356,6 +356,10 @@ function done(query?: string): boolean | void {
 	if (query == null || typeof query !== 'string') return;
 
 	const q2 = query.replace(/:/g, '');
+	if (q2.match(/@\w/)) {
+		chosen(`:${q2}:`);
+		return true;
+	}
 	const exactMatchCustom = customEmojisMap.get(q2);
 	if (exactMatchCustom) {
 		chosen(exactMatchCustom);
