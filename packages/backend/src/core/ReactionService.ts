@@ -55,7 +55,7 @@ type DecodedReaction = {
 	host?: string | null;
 };
 
-const isCustomEmojiRegexp = /^:([\w+-]+)(?:@\.)?:$/;
+const isCustomEmojiRegexp = /^:([\w+-]+)(?:@([\w.-]+))?:$/;
 const decodeCustomEmojiRegexp = /^:([\w+-]+)(?:@([\w.-]+))?:$/;
 
 @Injectable()
@@ -114,16 +114,17 @@ export class ReactionService {
 				const reacterHost = this.utilityService.toPunyNullable(user.host);
 
 				const name = custom[1];
-				const emoji = reacterHost == null
+				const host = custom[2] ?? null;
+				const emoji = (host == null && reacterHost == null)
 					? (await this.customEmojiService.localEmojisCache.fetch()).get(name)
 					: await this.emojisRepository.findOneBy({
-						host: reacterHost,
+						host: host ?? reacterHost,
 						name,
 					});
 
 				if (emoji) {
 					if (emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.length === 0 || (await this.roleService.getUserRoles(user.id)).some(r => emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.includes(r.id))) {
-						reaction = reacterHost ? `:${name}@${reacterHost}:` : `:${name}:`;
+						reaction = (host ?? reacterHost) ? `:${name}@${host ?? reacterHost}:` : `:${name}:`;
 
 						// センシティブ
 						if ((note.reactionAcceptance === 'nonSensitiveOnly') && emoji.isSensitive) {
