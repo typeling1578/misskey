@@ -38,7 +38,7 @@ export class CreateSystemUserService {
 		// Generate secret
 		const secret = generateNativeUserToken();
 
-		const keyPair = await genRsaKeyPair();
+		const keyPair = await genRsaKeyPair(4096);
 
 		let account!: MiUser;
 
