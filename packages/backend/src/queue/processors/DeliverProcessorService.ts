@@ -121,7 +121,9 @@ export class DeliverProcessorService {
 						});
 						throw new Bull.UnrecoverableError(`${host} is gone`);
 					}
-					throw new Bull.UnrecoverableError(`${res.statusCode} ${res.statusMessage}`);
+					if (![403, 404, 429].includes(res.statusCode)) {
+						throw new Bull.UnrecoverableError(`${res.statusCode} ${res.statusMessage}`);
+					}
 				}
 
 				// 5xx etc.
