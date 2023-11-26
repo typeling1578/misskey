@@ -82,6 +82,7 @@ type Source = {
 	inboxJobMaxAttempts?: number;
 
 	mediaProxy?: string;
+	mediaProxyKey?: string;
 	proxyRemoteFiles?: boolean;
 	videoThumbnailGenerator?: string;
 
@@ -157,6 +158,7 @@ export type Config = {
 	clientEntry: string;
 	clientManifestExists: boolean;
 	mediaProxy: string;
+	mediaProxyKey: string;
 	externalMediaProxyEnabled: boolean;
 	videoThumbnailGenerator: string | null;
 	redis: RedisOptions & RedisOptionsSource;
@@ -250,6 +252,7 @@ export function loadConfig(): Config {
 		proxyRemoteFiles: config.proxyRemoteFiles,
 		signToActivityPubGet: config.signToActivityPubGet,
 		mediaProxy: externalMediaProxy ?? internalMediaProxy,
+		mediaProxyKey: config.mediaProxyKey ?? '',
 		externalMediaProxyEnabled: externalMediaProxy !== null && externalMediaProxy !== internalMediaProxy,
 		videoThumbnailGenerator: config.videoThumbnailGenerator ?
 			config.videoThumbnailGenerator.endsWith('/') ? config.videoThumbnailGenerator.substring(0, config.videoThumbnailGenerator.length - 1) : config.videoThumbnailGenerator

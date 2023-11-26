@@ -22,6 +22,7 @@ import { UtilityService } from '../UtilityService.js';
 import { VideoProcessingService } from '../VideoProcessingService.js';
 import { UserEntityService } from './UserEntityService.js';
 import { DriveFolderEntityService } from './DriveFolderEntityService.js';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
 
 type PackOptions = {
 	detail?: boolean,
@@ -81,6 +82,7 @@ export class DriveFileEntityService {
 			query({
 				url,
 				...(mode ? { [mode]: '1' } : {}),
+				...(this.config.mediaProxyKey ? { sign: getMediaProxySign(url, this.config.mediaProxyKey) } : {}),
 			}),
 		);
 	}

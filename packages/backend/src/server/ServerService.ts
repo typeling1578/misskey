@@ -32,6 +32,7 @@ import { FileServerService } from './FileServerService.js';
 import { ClientServerService } from './web/ClientServerService.js';
 import { OpenApiServerService } from './api/openapi/OpenApiServerService.js';
 import { OAuth2ProviderService } from './oauth/OAuth2ProviderService.js';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
 
 const _dirname = fileURLToPath(new URL('.', import.meta.url));
 
@@ -143,14 +144,18 @@ export class ServerService implements OnApplicationShutdown {
 			if ('badge' in request.query) {
 				url = new URL(`${this.config.mediaProxy}/emoji.png`);
 				// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-				url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+				const targetUrl = emoji.publicUrl || emoji.originalUrl;
+				url.searchParams.set('url', targetUrl);
 				url.searchParams.set('badge', '1');
+				if (this.config.mediaProxyKey) url.searchParams.set('sign', getMediaProxySign(targetUrl, this.config.mediaProxyKey));
 			} else {
 				url = new URL(`${this.config.mediaProxy}/emoji.webp`);
 				// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-				url.searchParams.set('url', emoji.publicUrl || emoji.originalUrl);
+				const targetUrl = emoji.publicUrl || emoji.originalUrl;
+				url.searchParams.set('url', targetUrl);
 				url.searchParams.set('emoji', '1');
 				if ('static' in request.query) url.searchParams.set('static', '1');
+				if (this.config.mediaProxyKey) url.searchParams.set('sign', getMediaProxySign(targetUrl, this.config.mediaProxyKey));
 			}
 
 			return await reply.redirect(

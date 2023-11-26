@@ -28,6 +28,7 @@ import { bindThis } from '@/decorators.js';
 import { isMimeImage } from '@/misc/is-mime-image.js';
 import { correctFilename } from '@/misc/correct-filename.js';
 import type { FastifyInstance, FastifyRequest, FastifyReply, FastifyPluginOptions } from 'fastify';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
 
 const _filename = fileURLToPath(import.meta.url);
 const _dirname = dirname(_filename);
@@ -138,6 +139,9 @@ export class FileServerService {
 						const url = new URL(`${this.config.mediaProxy}/static.webp`);
 						url.searchParams.set('url', file.url);
 						url.searchParams.set('static', '1');
+						if (this.config.mediaProxyKey) {
+							url.searchParams.set('sign', getMediaProxySign(file.url, this.config.mediaProxyKey));
+						}
 
 						file.cleanup();
 						return await reply.redirect(301, url.toString());
@@ -158,6 +162,9 @@ export class FileServerService {
 
 						const url = new URL(`${this.config.mediaProxy}/svg.webp`);
 						url.searchParams.set('url', file.url);
+						if (this.config.mediaProxyKey) {
+							url.searchParams.set('sign', getMediaProxySign(file.url, this.config.mediaProxyKey));
+						}
 
 						file.cleanup();
 						return await reply.redirect(301, url.toString());
@@ -214,7 +221,7 @@ export class FileServerService {
 	}
 
 	@bindThis
-	private async proxyHandler(request: FastifyRequest<{ Params: { url: string; }; Querystring: { url?: string; }; }>, reply: FastifyReply) {
+	private async proxyHandler(request: FastifyRequest<{ Params: { url: string; }; Querystring: { url?: string; sign?: string; }; }>, reply: FastifyReply) {
 		const url = 'url' in request.query ? request.query.url : 'https://' + request.params.url;
 
 		if (typeof url !== 'string') {
@@ -235,11 +242,23 @@ export class FileServerService {
 			for (const [key, value] of Object.entries(request.query)) {
 				url.searchParams.append(key, value);
 			}
+			if (this.config.mediaProxyKey) {
+				url.searchParams.set('sign', getMediaProxySign(request.query.url ?? request.params.url, this.config.mediaProxyKey));
+			}
 
 			return await reply.redirect(
 				301,
 				url.toString(),
 			);
+		}
+
+		if (this.config.mediaProxyKey && !url.startsWith(`${this.config.url}/files/`)) {
+			const querySign = request.query.sign;
+			const sign = getMediaProxySign(url, this.config.mediaProxyKey);
+			if (querySign !== sign) {
+				reply.code(401);
+				return;
+			}
 		}
 
 		// Create temp file

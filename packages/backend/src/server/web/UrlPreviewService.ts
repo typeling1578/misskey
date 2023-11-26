@@ -15,6 +15,7 @@ import { LoggerService } from '@/core/LoggerService.js';
 import { bindThis } from '@/decorators.js';
 import { ApiError } from '@/server/api/error.js';
 import type { FastifyRequest, FastifyReply } from 'fastify';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
 
 @Injectable()
 export class UrlPreviewService {
@@ -38,6 +39,7 @@ export class UrlPreviewService {
 				? `${this.config.mediaProxy}/preview.webp?${query({
 					url,
 					preview: '1',
+					...(this.config.mediaProxyKey ? { sign: getMediaProxySign(url, this.config.mediaProxyKey) } : {}),
 				})}`
 				: url
 			: null;
