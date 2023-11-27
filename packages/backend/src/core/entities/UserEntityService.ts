@@ -29,6 +29,7 @@ import type { OnModuleInit } from '@nestjs/common';
 import type { NoteEntityService } from './NoteEntityService.js';
 import type { DriveFileEntityService } from './DriveFileEntityService.js';
 import type { PageEntityService } from './PageEntityService.js';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
 
 type IsUserDetailed<Detailed extends boolean> = Detailed extends true ? Packed<'UserDetailed'> : Packed<'UserLite'>;
 type IsMeAndIsUserDetailed<ExpectsMe extends boolean | null, Detailed extends boolean> =
@@ -318,6 +319,32 @@ export class UserEntityService implements OnModuleInit {
 		}, options);
 
 		const user = typeof src === 'object' ? src : await this.usersRepository.findOneByOrFail({ id: src });
+
+		// migration
+		if (user.avatarId && user.avatarUrl) {
+			// add or remove or update sign
+			if ((user.avatarUrl.includes('sign=') && !this.config.mediaProxyKey)
+			|| (this.config.mediaProxyKey && new URL(user.avatarUrl).searchParams.get('sign') !== getMediaProxySign(user.avatarUrl, this.config.mediaProxyKey))) {
+				const avatar = await this.driveFilesRepository.findOneByOrFail({ id: user.avatarId });
+				const avatarUrl = this.driveFileEntityService.getPublicUrl(avatar, 'avatar');
+				user.avatarUrl = avatarUrl;
+				this.usersRepository.update(user.id, {
+					avatarUrl,
+				});
+			}
+		}
+		if (user.bannerId && user.bannerUrl) {
+			// add or remove or update sign
+			if ((user.bannerUrl.includes('sign=') && !this.config.mediaProxyKey)
+			|| (this.config.mediaProxyKey && new URL(user.bannerUrl).searchParams.get('sign') !== getMediaProxySign(user.bannerUrl, this.config.mediaProxyKey))) {
+				const banner = await this.driveFilesRepository.findOneByOrFail({ id: user.bannerId });
+				const bannerUrl = this.driveFileEntityService.getPublicUrl(banner);
+				user.bannerUrl = bannerUrl;
+				this.usersRepository.update(user.id, {
+					bannerUrl,
+				});
+			}
+		}
 
 		const meId = me ? me.id : null;
 		const isMe = meId === user.id;

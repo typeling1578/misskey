@@ -3,20 +3,40 @@
  * SPDX-License-Identifier: AGPL-3.0-only
  */
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { DI } from '@/di-symbols.js';
+import type { Config } from '@/config.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { MiInstance } from '@/models/Instance.js';
 import { MetaService } from '@/core/MetaService.js';
 import { bindThis } from '@/decorators.js';
 import { UtilityService } from '../UtilityService.js';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
+import { appendQuery, query } from '@/misc/prelude/url.js';
 
 @Injectable()
 export class InstanceEntityService {
 	constructor(
+		@Inject(DI.config)
+		private config: Config,
+
 		private metaService: MetaService,
 
 		private utilityService: UtilityService,
 	) {
+	}
+
+	@bindThis
+	private getProxiedUrl(url: string, mode?: 'preview'): string {
+		return appendQuery(
+			`${this.config.mediaProxy}/${mode ?? 'image'}.webp`,
+			query({
+				url,
+				...(mode ? { [mode]: '1' } : {}),
+				...(this.config.mediaProxyKey ? { sign: getMediaProxySign(url, this.config.mediaProxyKey) } : {}),
+				fallback: 1,
+			}),
+		);
 	}
 
 	@bindThis
@@ -43,8 +63,8 @@ export class InstanceEntityService {
 			maintainerName: instance.maintainerName,
 			maintainerEmail: instance.maintainerEmail,
 			isSilenced: this.utilityService.isSilencedHost(meta.silencedHosts, instance.host),
-			iconUrl: instance.iconUrl,
-			faviconUrl: instance.faviconUrl,
+			iconUrl: instance.iconUrl ? this.getProxiedUrl(instance.iconUrl, 'preview') : null,
+			faviconUrl: instance.faviconUrl ? this.getProxiedUrl(instance.faviconUrl, 'preview') : null,
 			themeColor: instance.themeColor,
 			infoUpdatedAt: instance.infoUpdatedAt ? instance.infoUpdatedAt.toISOString() : null,
 			latestRequestReceivedAt: instance.latestRequestReceivedAt ? instance.latestRequestReceivedAt.toISOString() : null,

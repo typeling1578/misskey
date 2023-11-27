@@ -5,18 +5,36 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { DI } from '@/di-symbols.js';
+import type { Config } from '@/config.js';
 import type { EmojisRepository } from '@/models/_.js';
 import type { Packed } from '@/misc/json-schema.js';
 import type { } from '@/models/Blocking.js';
 import type { MiEmoji } from '@/models/Emoji.js';
 import { bindThis } from '@/decorators.js';
+import { getMediaProxySign } from '@/misc/media-proxy.js';
+import { appendQuery, query } from '@/misc/prelude/url.js';
 
 @Injectable()
 export class EmojiEntityService {
 	constructor(
+		@Inject(DI.config)
+		private config: Config,
+
 		@Inject(DI.emojisRepository)
 		private emojisRepository: EmojisRepository,
 	) {
+	}
+
+	@bindThis
+	private getProxiedUrl(url: string, mode?: 'emoji'): string {
+		return appendQuery(
+			`${this.config.mediaProxy}/${mode ?? 'image'}.webp`,
+			query({
+				url,
+				...(mode ? { [mode]: '1' } : {}),
+				...(this.config.mediaProxyKey ? { sign: getMediaProxySign(url, this.config.mediaProxyKey) } : {}),
+			}),
+		);
 	}
 
 	@bindThis
@@ -30,7 +48,7 @@ export class EmojiEntityService {
 			name: emoji.name,
 			category: emoji.category,
 			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-			url: emoji.publicUrl || emoji.originalUrl,
+			url: this.getProxiedUrl(emoji.publicUrl || emoji.originalUrl, 'emoji'),
 			isSensitive: emoji.isSensitive ? true : undefined,
 			roleIdsThatCanBeUsedThisEmojiAsReaction: emoji.roleIdsThatCanBeUsedThisEmojiAsReaction.length > 0 ? emoji.roleIdsThatCanBeUsedThisEmojiAsReaction : undefined,
 		};
@@ -56,7 +74,7 @@ export class EmojiEntityService {
 			category: emoji.category,
 			host: emoji.host,
 			// || emoji.originalUrl してるのは後方互換性のため（publicUrlはstringなので??はだめ）
-			url: emoji.publicUrl || emoji.originalUrl,
+			url: this.getProxiedUrl(emoji.publicUrl || emoji.originalUrl, 'emoji'),
 			license: emoji.license,
 			isSensitive: emoji.isSensitive,
 			localOnly: emoji.localOnly,
