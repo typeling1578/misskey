@@ -90,7 +90,7 @@ export class NotificationEntityService implements OnModuleInit {
 			...(userIfNeed != null ? { user: userIfNeed } : {}),
 			...(noteIfNeed != null ? { note: noteIfNeed } : {}),
 			...(notification.type === 'reaction' ? {
-				reaction: notification.reaction,
+				reaction: notification.reaction, // TODO: proxied url
 			} : {}),
 			...(notification.type === 'achievementEarned' ? {
 				achievement: notification.achievement,
@@ -194,7 +194,7 @@ export class NotificationEntityService implements OnModuleInit {
 				createdAt: new Date(notification.createdAt).toISOString(),
 				type: notification.type,
 				note: noteIfNeed,
-				reactions,
+				reactions, // TODO: proxied url
 			});
 		} else if (notification.type === 'renote:grouped') {
 			const users = await Promise.all(notification.userIds.map(userId => {
@@ -222,7 +222,7 @@ export class NotificationEntityService implements OnModuleInit {
 			...(userIfNeed != null ? { user: userIfNeed } : {}),
 			...(noteIfNeed != null ? { note: noteIfNeed } : {}),
 			...(notification.type === 'reaction' ? {
-				reaction: notification.reaction,
+				reaction: notification.reaction, // TODO: proxied url
 			} : {}),
 			...(notification.type === 'achievementEarned' ? {
 				achievement: notification.achievement,

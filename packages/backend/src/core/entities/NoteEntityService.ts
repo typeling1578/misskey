@@ -336,9 +336,9 @@ export class NoteEntityService implements OnModuleInit {
 			renoteCount: note.renoteCount,
 			repliesCount: note.repliesCount,
 			reactions: this.reactionService.convertLegacyReactions(note.reactions),
-			reactionEmojis: this.customEmojiService.populateEmojis(reactionEmojiNames, host),
+			reactionEmojis: this.customEmojiService.populateEmojis(reactionEmojiNames, host), // TODO: proxied url
 			reactionAndUserPairCache: opts.withReactionAndUserPairCache ? note.reactionAndUserPairCache : undefined,
-			emojis: host != null ? this.customEmojiService.populateEmojis(note.emojis, host) : undefined,
+			emojis: host != null ? this.customEmojiService.populateEmojis(note.emojis, host) : undefined, // TODO: proxied url
 			tags: note.tags.length > 0 ? note.tags : undefined,
 			fileIds: note.fileIds,
 			files: packedFiles != null ? this.packAttachedFiles(note.fileIds, packedFiles) : this.driveFileEntityService.packManyByIds(note.fileIds),
