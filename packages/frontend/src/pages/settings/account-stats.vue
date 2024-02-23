@@ -118,7 +118,7 @@
 import { onMounted, ref, computed } from 'vue';
 import FormSection from '@/components/form/section.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
-import * as os from '@/os.js';
+import { misskeyApi } from '@/scripts/misskey-api.js';
 import number from '@/filters/number.js';
 import bytes from '@/filters/bytes.js';
 import { $i } from '@/account.js';
@@ -128,7 +128,7 @@ import { definePageMetadata } from '@/scripts/page-metadata.js';
 const stats = ref<any>({});
 
 onMounted(() => {
-	os.api('users/stats', {
+	misskeyApi('users/stats', {
 		userId: $i!.id,
 	}).then(response => {
 		stats.value = response;
