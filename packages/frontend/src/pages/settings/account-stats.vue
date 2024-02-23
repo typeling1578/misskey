@@ -118,12 +118,12 @@
 import { onMounted, ref, computed } from 'vue';
 import FormSection from '@/components/form/section.vue';
 import MkKeyValue from '@/components/MkKeyValue.vue';
-import * as os from '@/os';
-import number from '@/filters/number';
-import bytes from '@/filters/bytes';
-import { $i } from '@/account';
-import { i18n } from '@/i18n';
-import { definePageMetadata } from '@/scripts/page-metadata';
+import * as os from '@/os.js';
+import number from '@/filters/number.js';
+import bytes from '@/filters/bytes.js';
+import { $i } from '@/account.js';
+import { i18n } from '@/i18n.js';
+import { definePageMetadata } from '@/scripts/page-metadata.js';
 
 const stats = ref<any>({});
 
