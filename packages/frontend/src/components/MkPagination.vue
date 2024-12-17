@@ -396,7 +396,6 @@ function unshiftItems(newItems: MisskeyEntity[]) {
 	items.value = new Map([...arrayToEntries(newItems), ...items.value].slice(0, props.displayLimit));
 
 	if (length >= props.displayLimit) more.value = true;
-	if (props.pagination.offsetMode) offset.value = items.value.size;
 }
 
 /**
@@ -408,7 +407,6 @@ function concatItems(oldItems: MisskeyEntity[]) {
 	items.value = new Map([...items.value, ...arrayToEntries(oldItems)].slice(0, props.displayLimit));
 
 	if (length >= props.displayLimit) more.value = true;
-	if (props.pagination.offsetMode) offset.value = items.value.size;
 }
 
 function executeQueue() {
