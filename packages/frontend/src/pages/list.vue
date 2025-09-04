@@ -6,13 +6,7 @@ SPDX-License-Identifier: AGPL-3.0-only
 <template>
 <PageWithHeader :actions="headerActions" :tabs="headerTabs">
 	<div v-if="error != null" class="_spacer" style="--MI_SPACER-w: 1200px;">
-		<div :class="$style.root">
-			<img :class="$style.img" :src="serverErrorImageUrl" draggable="false"/>
-			<p :class="$style.text">
-				<i class="ti ti-alert-triangle"></i>
-				{{ i18n.ts.nothing }}
-			</p>
-		</div>
+		<MkResult type="error"/>
 	</div>
 	<div v-else-if="list" class="_spacer" style="--MI_SPACER-w: 700px;">
 		<div v-if="list" class="members _margin">
@@ -42,7 +36,6 @@ import { i18n } from '@/i18n.js';
 import MkUserCardMini from '@/components/MkUserCardMini.vue';
 import MkButton from '@/components/MkButton.vue';
 import { definePage } from '@/page.js';
-import { serverErrorImageUrl } from '@/instance.js';
 
 const props = defineProps<{
 	listId: string;
@@ -69,24 +62,29 @@ function fetchList(): void {
 }
 
 function like() {
+	if (list.value == null) return;
 	os.apiWithDialog('users/lists/favorite', {
 		listId: list.value.id,
 	}).then(() => {
+		if (list.value == null) return;
 		list.value.isLiked = true;
 		list.value.likedCount++;
 	});
 }
 
 function unlike() {
+	if (list.value == null) return;
 	os.apiWithDialog('users/lists/unfavorite', {
 		listId: list.value.id,
 	}).then(() => {
+		if (list.value == null) return;
 		list.value.isLiked = false;
 		list.value.likedCount--;
 	});
 }
 
 async function create() {
+	if (list.value == null) return;
 	const { canceled, result: name } = await os.inputText({
 		title: i18n.ts.enterListName,
 	});
@@ -105,6 +103,7 @@ definePage(() => ({
 	icon: 'ti ti-list',
 }));
 </script>
+
 <style lang="scss" module>
 .userItem {
 	display: flex;
